@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/">
+  <title>قرايتي برو</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Custom scrollbar for webkit browsers */
+    ::-webkit-scrollbar {
+      width: 10px; /* Slightly wider */
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9; /* slate-100 */
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2dd4bf; /* teal-400 */
+      border-radius: 10px;
+      border: 2px solid #f1f5f9; /* Adds a track border around thumb */
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #14b8a6; /* teal-500 */
+    }
+    html.dark ::-webkit-scrollbar-track {
+      background: #334155; /* dark:bg-slate-700 */
+    }
+    html.dark ::-webkit-scrollbar-thumb {
+      background: #2dd4bf; /* dark:bg-teal-400, can adjust if needed, teal-500 might be too dark */
+      border-color: #334155; /* dark:border-slate-700 */
+    }
+    html.dark ::-webkit-scrollbar-thumb:hover {
+      background: #14b8a6; /* dark:bg-teal-500 */
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.5.1",
+    "html2canvas": "https://esm.sh/html2canvas@^1.4.1",
+    "jspdf": "https://esm.sh/jspdf@^3.0.1",
+    "openai": "https://esm.sh/openai@^5.3.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

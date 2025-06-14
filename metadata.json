@@ -1,0 +1,9 @@
+{
+  "name": "قرايتي برو",
+  "description": "An application that uses AI to summarize lessons, provide explanations, generate quizzes, and create mind maps from uploaded images or text. It requires an API key for the Gemini API to be set in the environment variable process.env.API_KEY.",
+  "requestFramePermissions": [
+    "microphone",
+    "display-capture"
+  ],
+  "prompt": ""
+}
