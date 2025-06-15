@@ -11,7 +11,7 @@ if (!API_KEY) {
 }
 
 const ai = new GoogleGenAI({ apiKey: API_KEY! });
-const textModel = 'gemini-2.5-flash-preview-04-17';
+const textModel = 'gemini-2.0-flash';
 
 function parseJsonFromText(text: string): any {
   let jsonStr = text.trim();
