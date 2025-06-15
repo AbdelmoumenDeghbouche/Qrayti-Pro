@@ -37,7 +37,7 @@ const ContentDisplayCard: React.FC<ContentDisplayCardProps> = ({ title, content,
     if (isSpeechOperationActive && title === "الشرح") { 
         if (hasRelevantPropChanged || !content) {
             ttsService.stopGeneratingSpeech();
-            setIsSpeechOperationActive(false); // Ensure state is reset
+            setIsSpeechOperationActive(false);
             setIsPausedByApp(false);
         }
     }
@@ -72,10 +72,23 @@ const ContentDisplayCard: React.FC<ContentDisplayCardProps> = ({ title, content,
         await ttsService.generateSpeech(content, languageCode);
       } catch (err: any) { 
         console.error(`TTS Error in component (generateSpeech for ${title}):`, err);
-        if (err.message && (err.message.includes('interrupted') || err.message.includes('canceled'))) {
+        
+        // Better error handling for mobile devices
+        let errorMessage = "فشل في إنشاء أو تشغيل الصوت.";
+        
+        if (err.message) {
+          if (err.message.includes('interrupted') || err.message.includes('canceled')) {
             // Do not show UI error for expected interruptions
-        } else {
-            setTtsError(err.message || "فشل في إنشاء أو تشغيل الصوت.");
+            errorMessage = "";
+          } else if (err.message.includes('synthesis') || err.message.includes('voice')) {
+            errorMessage = "خطأ في تشغيل الصوت. تأكد من توفر الأصوات في متصفحك.";
+          } else if (err.message.includes('network') || err.message.includes('connection')) {
+            errorMessage = "خطأ في الاتصال. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.";
+          }
+        }
+        
+        if (errorMessage) {
+          setTtsError(errorMessage);
         }
       } finally {
         setIsSpeechOperationActive(false);
@@ -85,15 +98,26 @@ const ContentDisplayCard: React.FC<ContentDisplayCardProps> = ({ title, content,
   };
 
   const handleDownloadAudio = async () => {
-    if (!content || !languageCode || !ttsService.isTTSSupported() || isDownloadingAudio || isSpeechOperationActive || title !== "الشرح") return;
+    // Remove the isSpeechOperationActive check to allow downloading after playing
+    if (!content || !languageCode || !ttsService.isTTSSupported() || isDownloadingAudio || title !== "الشرح") return;
 
     setIsDownloadingAudio(true);
     setAudioDownloadError(null);
-    setTtsError(null); 
+    setTtsError(null);
+    
     try {
-      ttsService.stopGeneratingSpeech(); 
+      // Stop any ongoing speech before recording
+      ttsService.stopGeneratingSpeech();
+      
+      // Reset speech operation state
+      setIsSpeechOperationActive(false);
+      setIsPausedByApp(false);
+      
+      // Add a small delay to ensure speech is fully stopped
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const audioBlob = await ttsService.generateSpeechAndRecord(content, languageCode);
+      
       if (!audioBlob || audioBlob.size === 0) {
         throw new Error("تم استلام كائن صوتي فارغ. قد يكون التسجيل فشل أو كان الكلام صامتاً.");
       }
@@ -118,13 +142,20 @@ const ContentDisplayCard: React.FC<ContentDisplayCardProps> = ({ title, content,
 
     } catch (err: any) {
       console.error("Audio Download Error in component:", err);
-      setAudioDownloadError(err.message || "فشل في تسجيل أو تحميل الصوت. تحقق من وحدة التحكم لمزيد من التفاصيل.");
+      
+      let errorMessage = "فشل في تسجيل أو تحميل الصوت. تحقق من وحدة التحكم لمزيد من التفاصيل.";
+      
+      if (err.message) {
+        if (err.message.includes('MediaRecorder')) {
+          errorMessage = "خطأ في تسجيل الصوت. متصفحك قد لا يدعم تحميل الملفات الصوتية.";
+        } else if (err.message.includes('synthesis') || err.message.includes('voice')) {
+          errorMessage = "خطأ في تشغيل الصوت أثناء التسجيل. تأكد من توفر الأصوات في متصفحك.";
+        }
+      }
+      
+      setAudioDownloadError(errorMessage);
     } finally {
       setIsDownloadingAudio(false);
-      if(isSpeechOperationActive) { 
-        setIsSpeechOperationActive(false);
-        setIsPausedByApp(false);
-      }
     }
   };
   
@@ -132,7 +163,6 @@ const ContentDisplayCard: React.FC<ContentDisplayCardProps> = ({ title, content,
   const canDownloadAudio = canUseTTS && typeof MediaRecorder !== 'undefined';
   const showTtsDisabledMessage = title === 'الشرح' && !isLoading && content && !ttsService.isTTSSupported();
   const showMediaRecorderDisabledMessage = title === 'الشرح' && !isLoading && content && ttsService.isTTSSupported() && typeof MediaRecorder === 'undefined';
-
 
   let playButtonIcon = <span role="img" aria-hidden="true" className="text-2xl">🔊</span>;
   let playButtonText = "تشغيل الشرح";
@@ -147,20 +177,19 @@ const ContentDisplayCard: React.FC<ContentDisplayCardProps> = ({ title, content,
     }
   }
 
-
   return (
-    <div className="bg-white dark:bg-slate-800 shadow-xl dark:border dark:border-slate-700/50 rounded-2xl p-6 sm:p-10 my-8 flex flex-col"> {/* Increased rounding, padding, and shadow */}
+    <div className="bg-white dark:bg-slate-800 shadow-xl dark:border dark:border-slate-700/50 rounded-2xl p-6 sm:p-10 my-8 flex flex-col">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-4xl font-bold text-slate-800 dark:text-slate-100">{title}</h3> {/* Updated text color and size */}
+        <h3 className="text-4xl font-bold text-slate-800 dark:text-slate-100">{title}</h3>
       </div>
       
-      <div className="min-h-[250px] flex-grow mb-8"> {/* Increased min-height */}
+      <div className="min-h-[250px] flex-grow mb-8">
         {isLoading ? (
           <div className="flex items-center justify-center h-full py-12">
-            <LoadingSpinner size="w-14 h-14" /> {/* Slightly larger spinner */}
+            <LoadingSpinner size="w-14 h-14" />
           </div>
         ) : content ? (
-          <div id={elementId} className="text-slate-700 dark:text-slate-300 prose prose-xl dark:prose-invert max-w-none whitespace-pre-wrap leading-relaxed"> {/* Updated text color and prose size */}
+          <div id={elementId} className="text-slate-700 dark:text-slate-300 prose prose-xl dark:prose-invert max-w-none whitespace-pre-wrap leading-relaxed">
             {content}
           </div>
         ) : (
@@ -199,7 +228,7 @@ const ContentDisplayCard: React.FC<ContentDisplayCardProps> = ({ title, content,
           <div className="flex flex-col items-start">
             <button
               onClick={handleDownloadAudio}
-              disabled={isDownloadingAudio || isSpeechOperationActive || !content} 
+              disabled={isDownloadingAudio || !content} 
               className="w-full sm:w-auto px-6 py-3 text-lg font-semibold text-white bg-sky-500 hover:bg-sky-600 dark:bg-sky-600 dark:hover:bg-sky-700 rounded-xl focus:outline-none focus:ring-4 focus:ring-sky-300 dark:focus:ring-sky-700 transition-all duration-200 ease-in-out flex items-center justify-center space-x-3 disabled:opacity-60 disabled:cursor-not-allowed transform hover:scale-105"
               aria-label="تحميل صوت الشرح"
             >
@@ -245,4 +274,4 @@ const ContentDisplayCard: React.FC<ContentDisplayCardProps> = ({ title, content,
   );
 };
 
-export default ContentDisplayCard;
+export default ContentDisplayCard;  
