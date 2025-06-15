@@ -345,9 +345,7 @@ const App: React.FC = () => {
         )}
          <footer className="mt-20 py-10 border-t border-slate-200 dark:border-slate-700/50 text-center text-slate-500 dark:text-slate-400">
             <p className="text-lg">&copy; {new Date().getFullYear()} قرايتي برو. كل الإبداع يبدأ بفهم أعمق.</p>
-            <p className="text-base mt-3">
-                تذكر: يتطلب هذا السحر الصغير مفتاح API لواجهة Gemini في  <code className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md text-sm">process.env.API_KEY</code>.
-            </p>
+
              <p className="text-base mt-2">
                 ميزة تحويل النص إلى كلام تعتمد على متصفحك.
             </p>
